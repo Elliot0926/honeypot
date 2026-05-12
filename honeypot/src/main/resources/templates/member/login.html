@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>꿀단지 - 로그인</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div class="auth-container">
+    <div class="auth-box">
+        <div class="auth-header">
+            <h2>🍯 로그인</h2>
+        </div>
+
+        <!-- 에러 메시지 -->
+        <div class="error-msg" th:if="${errorMsg}" th:text="${errorMsg}"></div>
+
+        <form th:action="@{/member/login}" method="post">
+            <div class="form-group">
+                <label>이메일</label>
+                <input type="email" name="email" placeholder="example@email.com" required>
+            </div>
+            <div class="form-group">
+                <label>비밀번호</label>
+                <input type="password" name="password" placeholder="비밀번호 입력" required>
+            </div>
+            <button type="submit" class="btn-primary">로그인</button>
+        </form>
+
+        <div class="auth-footer">
+            <p>계정이 없으신가요? <a th:href="@{/member/join}">회원가입</a></p>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

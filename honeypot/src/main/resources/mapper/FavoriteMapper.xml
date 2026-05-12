@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.cloud.honeypot.mapper.FavoriteMapper">
+
+    <insert id="insertFavorite">
+        INSERT INTO favorite_complex (member_id, complex_id)
+        VALUES (#{memberId}, #{complexId})
+    </insert>
+
+    <delete id="deleteFavorite">
+        DELETE FROM favorite_complex
+        WHERE member_id = #{memberId} AND complex_id = #{complexId}
+    </delete>
+
+    <select id="countFavorite" resultType="int">
+        SELECT COUNT(*) FROM favorite_complex
+        WHERE member_id = #{memberId} AND complex_id = #{complexId}
+    </select>
+
+    <select id="selectFavoritesByMember" resultType="org.cloud.honeypot.dto.FavoriteDto">
+        SELECT f.favorite_id, f.member_id, f.complex_id, f.created_at,
+               a.complex_name, a.legal_dong, a.build_year, 
+               a.household_count, a.latitude, a.longitude
+        FROM favorite_complex f
+        JOIN apt_complex a ON f.complex_id = a.complex_id
+        WHERE f.member_id = #{memberId}
+        ORDER BY f.created_at DESC
+    </select>
+
+</mapper>

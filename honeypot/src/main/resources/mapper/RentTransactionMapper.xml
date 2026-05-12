@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 전월세 실거래가 SQL -->
+<mapper namespace="org.cloud.honeypot.mapper.RentTransactionMapper">
+
+    <!-- 전월세 실거래가 저장 -->
+    <insert id="insertRent" parameterType="org.cloud.honeypot.dto.RentTransactionDto">
+        INSERT INTO rent_transaction (
+            complex_id, apt_dong, rent_type, deposit, monthly_rent,
+            area, floor, deal_year, deal_month, deal_day
+        ) VALUES (
+            #{complexId}, #{aptDong}, #{rentType}, #{deposit}, #{monthlyRent},
+            #{area}, #{floor}, #{dealYear}, #{dealMonth}, #{dealDay}
+        )
+    </insert>
+
+    <!-- 중복 체크: 같은 단지 + 같은 날짜 + 같은 보증금이면 중복 -->
+    <select id="countByComplexAndDate" resultType="int">
+        SELECT COUNT(*) FROM rent_transaction
+        WHERE complex_id = #{complexId}
+          AND deal_year  = #{dealYear}
+          AND deal_month = #{dealMonth}
+          AND deal_day   = #{dealDay}
+          AND deposit    = #{deposit}
+    </select>
+
+    <!-- 단지별 전월세 거래 목록 (최신순) -->
+    <select id="selectByComplex" resultType="org.cloud.honeypot.dto.RentTransactionDto">
+        SELECT * FROM rent_transaction
+        WHERE complex_id = #{complexId}
+        ORDER BY deal_year DESC, deal_month DESC, deal_day DESC
+    </select>
+
+</mapper>

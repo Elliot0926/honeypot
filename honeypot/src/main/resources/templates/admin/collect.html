@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>꿀단지 - 관리자 데이터 수집</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="/" class="navbar-brand">🍯 꿀단지</a>
+    <div class="navbar-right">
+        <a th:href="@{/admin/collect}" class="btn-login">데이터 수집</a>
+        <a th:href="@{/member/logout}" class="btn-login">로그아웃</a>
+    </div>
+</nav>
+
+<div class="auth-container" style="align-items:flex-start; padding:40px 20px;">
+    <div class="auth-box" style="width:520px;">
+        <div class="auth-header">
+            <h2>⚙️ 데이터 수집</h2>
+        </div>
+
+        <!-- 수집 결과 메시지 -->
+        <div th:if="${msg}"
+             style="padding:10px 20px; background:#E2EFDA; color:#2E7D32;
+                    margin:10px 20px; border-radius:4px;"
+             th:text="${msg}"></div>
+
+        <!-- 1. 공동주택 단지 정보 수집 -->
+        <div style="padding:20px;">
+            <h3 style="margin-bottom:12px; color:#1E293B;">🏢 공동주택 단지 정보 수집</h3>
+            <form th:action="@{/admin/collect/complex}" method="post">
+                <div class="form-group">
+                    <label>시군구 코드</label>
+                    <select name="sigunguCd" style="width:100%; padding:10px; border:1px solid #E2E8F0; border-radius:4px;">
+					    <option value="26110">부산 중구 (26110)</option>
+					    <option value="26140">부산 서구 (26140)</option>
+					    <option value="26170">부산 동구 (26170)</option>
+					    <option value="26200">부산 영도구 (26200)</option>
+					    <option value="26230">부산 부산진구 (26230)</option>
+					    <option value="26260">부산 동래구 (26260)</option>
+					    <option value="26290">부산 남구 (26290)</option>
+					    <option value="26320">부산 북구 (26320)</option>
+					    <option value="26350">부산 해운대구 (26350)</option>
+					    <option value="26380">부산 사하구 (26380)</option>
+					    <option value="26410">부산 금정구 (26410)</option>
+					    <option value="26440">부산 수영구 (26440)</option>
+					    <option value="26470">부산 사상구 (26470)</option>
+					    <option value="26500">부산 기장군 (26500)</option>
+					</select>
+                </div>
+                <button type="submit" class="btn-primary">수집 실행</button>
+            </form>
+        </div>
+
+        <hr style="border:none; border-top:1px solid #E2E8F0;">
+
+        <!-- 2. 주소 → 좌표 변환 -->
+        <div style="padding:20px;">
+            <h3 style="margin-bottom:8px; color:#1E293B;">📍 주소 → 좌표 변환</h3>
+            <p style="font-size:13px; color:#64748B; margin-bottom:12px;">
+                PENDING 상태인 단지 주소를 위경도로 변환합니다.
+            </p>
+            <form th:action="@{/admin/collect/geo}" method="post">
+                <button type="submit" class="btn-primary">좌표 변환 실행</button>
+            </form>
+        </div>
+
+        <hr style="border:none; border-top:1px solid #E2E8F0;">
+
+        <!-- 3. 매매 실거래가 수집 -->
+        <div style="padding:20px;">
+            <h3 style="margin-bottom:12px; color:#1E293B;">📈 매매 실거래가 수집</h3>
+            <form th:action="@{/admin/collect/sale}" method="post">
+                <div class="form-group">
+                    <label>시군구 코드</label>
+                    <select name="sigunguCd" style="width:100%; padding:10px; border:1px solid #E2E8F0; border-radius:4px;">
+					    <option value="26110">부산 중구 (26110)</option>
+					    <option value="26140">부산 서구 (26140)</option>
+					    <option value="26170">부산 동구 (26170)</option>
+					    <option value="26200">부산 영도구 (26200)</option>
+					    <option value="26230">부산 부산진구 (26230)</option>
+					    <option value="26260">부산 동래구 (26260)</option>
+					    <option value="26290">부산 남구 (26290)</option>
+					    <option value="26320">부산 북구 (26320)</option>
+					    <option value="26350">부산 해운대구 (26350)</option>
+					    <option value="26380">부산 사하구 (26380)</option>
+					    <option value="26410">부산 금정구 (26410)</option>
+					    <option value="26440">부산 수영구 (26440)</option>
+					    <option value="26470">부산 사상구 (26470)</option>
+					    <option value="26500">부산 기장군 (26500)</option>
+					</select>
+                </div>
+                <div class="form-group">
+                    <label>거래년월 (YYYYMM)</label>
+                    <input type="text" name="dealYmd" placeholder="예: 202501" maxlength="6" required>
+                    <small style="color:#94A3B8; font-size:12px;">예) 2025년 1월 → 202501</small>
+                </div>
+                <button type="submit" class="btn-primary">수집 실행</button>
+            </form>
+        </div>
+
+        <hr style="border:none; border-top:1px solid #E2E8F0;">
+
+        <!-- 4. 전월세 실거래가 수집 -->
+        <div style="padding:20px;">
+            <h3 style="margin-bottom:12px; color:#1E293B;">🏠 전월세 실거래가 수집</h3>
+            <form th:action="@{/admin/collect/rent}" method="post">
+                <div class="form-group">
+                    <label>시군구 코드</label>
+                    <select name="sigunguCd" style="width:100%; padding:10px; border:1px solid #E2E8F0; border-radius:4px;">
+					    <option value="26110">부산 중구 (26110)</option>
+					    <option value="26140">부산 서구 (26140)</option>
+					    <option value="26170">부산 동구 (26170)</option>
+					    <option value="26200">부산 영도구 (26200)</option>
+					    <option value="26230">부산 부산진구 (26230)</option>
+					    <option value="26260">부산 동래구 (26260)</option>
+					    <option value="26290">부산 남구 (26290)</option>
+					    <option value="26320">부산 북구 (26320)</option>
+					    <option value="26350">부산 해운대구 (26350)</option>
+					    <option value="26380">부산 사하구 (26380)</option>
+					    <option value="26410">부산 금정구 (26410)</option>
+					    <option value="26440">부산 수영구 (26440)</option>
+					    <option value="26470">부산 사상구 (26470)</option>
+					    <option value="26500">부산 기장군 (26500)</option>
+					</select>
+                </div>
+                <div class="form-group">
+                    <label>거래년월 (YYYYMM)</label>
+                    <input type="text" name="dealYmd" placeholder="예: 202501" maxlength="6" required>
+                    <small style="color:#94A3B8; font-size:12px;">예) 2025년 1월 → 202501</small>
+                </div>
+                <button type="submit" class="btn-primary">수집 실행</button>
+            </form>
+        </div>
+        
+        <hr style="border:none; border-top:1px solid #E2E8F0;">
+
+<!-- 5. 매매 일괄 수집 -->
+<div style="padding:20px;">
+    <h3 style="margin-bottom:12px; color:#1E293B;">📈 매매 실거래가 일괄 수집 (2023~2025)</h3>
+    <form th:action="@{/admin/collect/sale/all}" method="post">
+        <div class="form-group">
+            <label>시군구 코드</label>
+            <select name="sigunguCd" style="width:100%; padding:10px; border:1px solid #E2E8F0; border-radius:4px;">
+                <option value="26110">부산 중구 (26110)</option>
+                <option value="26140">부산 서구 (26140)</option>
+                <option value="26170">부산 동구 (26170)</option>
+                <option value="26200">부산 영도구 (26200)</option>
+                <option value="26230">부산 부산진구 (26230)</option>
+                <option value="26260">부산 동래구 (26260)</option>
+                <option value="26290">부산 남구 (26290)</option>
+                <option value="26320">부산 북구 (26320)</option>
+                <option value="26350">부산 해운대구 (26350)</option>
+                <option value="26380">부산 사하구 (26380)</option>
+                <option value="26410">부산 금정구 (26410)</option>
+                <option value="26440">부산 수영구 (26440)</option>
+                <option value="26470">부산 사상구 (26470)</option>
+                <option value="26500">부산 기장군 (26500)</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-primary">일괄 수집 실행</button>
+    </form>
+</div>
+
+<hr style="border:none; border-top:1px solid #E2E8F0;">
+
+<!-- 6. 전월세 일괄 수집 -->
+<div style="padding:20px;">
+    <h3 style="margin-bottom:12px; color:#1E293B;">🏠 전월세 실거래가 일괄 수집 (2023~2025)</h3>
+    <form th:action="@{/admin/collect/rent/all}" method="post">
+        <div class="form-group">
+            <label>시군구 코드</label>
+            <select name="sigunguCd" style="width:100%; padding:10px; border:1px solid #E2E8F0; border-radius:4px;">
+                <option value="26110">부산 중구 (26110)</option>
+                <option value="26140">부산 서구 (26140)</option>
+                <option value="26170">부산 동구 (26170)</option>
+                <option value="26200">부산 영도구 (26200)</option>
+                <option value="26230">부산 부산진구 (26230)</option>
+                <option value="26260">부산 동래구 (26260)</option>
+                <option value="26290">부산 남구 (26290)</option>
+                <option value="26320">부산 북구 (26320)</option>
+                <option value="26350">부산 해운대구 (26350)</option>
+                <option value="26380">부산 사하구 (26380)</option>
+                <option value="26410">부산 금정구 (26410)</option>
+                <option value="26440">부산 수영구 (26440)</option>
+                <option value="26470">부산 사상구 (26470)</option>
+                <option value="26500">부산 기장군 (26500)</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-primary">일괄 수집 실행</button>
+    </form>
+</div>
+
+    </div>
+</div>
+
+</body>
+</html>

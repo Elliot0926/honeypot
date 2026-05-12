@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>꿀단지 - 회원가입</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div class="auth-container">
+    <div class="auth-box">
+        <div class="auth-header">
+            <h2>🍯 회원가입</h2>
+        </div>
+
+        <!-- 에러 메시지 -->
+        <div class="error-msg" th:if="${errorMsg}" th:text="${errorMsg}"></div>
+
+        <form th:action="@{/member/join}" method="post">
+            <div class="form-group">
+                <label>이메일 *</label>
+                <input type="email" name="email" placeholder="example@email.com" required>
+            </div>
+            <div class="form-group">
+                <label>비밀번호 *</label>
+                <input type="password" name="password" placeholder="8자 이상 입력" required>
+            </div>
+            <div class="form-group">
+                <label>이름 *</label>
+                <input type="text" name="name" placeholder="홍길동" required>
+            </div>
+            <button type="submit" class="btn-primary">가입하기</button>
+        </form>
+
+        <div class="auth-footer">
+            <p>이미 계정이 있으신가요? <a th:href="@{/member/login}">로그인</a></p>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
