@@ -14,7 +14,7 @@ import jakarta.servlet.http.HttpSession;
 
 /**
  * 관리자 전용 컨트롤러
- * ADMIN 권한 체크 후 데이터 수집 기능 제공
+ * ADMIN 권한 체크 후 데이터 수집 기능 제공 ..
  */
 @Controller
 @RequestMapping("/admin")
