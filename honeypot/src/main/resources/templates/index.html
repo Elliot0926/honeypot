@@ -463,15 +463,34 @@
  
 		var infowindow = new kakao.maps.InfoWindow({ zIndex : 10 });
  
+		var markerOverlays = []; // 오버레이 전역 저장
+
 		function buildMarkers(data) {
 		    clusterer.clear();
+		    markerOverlays.forEach(function(o){ o.setMap(null); });
+		    markerOverlays = [];
+
 		    var markers = data.map(function(complex) {
 		        var position = new kakao.maps.LatLng(complex.latitude, complex.longitude);
 		        var marker = new kakao.maps.Marker({ position: position });
 		        marker.complexData = complex;
+
+		        // 단지명 오버레이 (기본 숨김)
+		        var el = document.createElement('div');
+		        el.style.cssText = 'background:rgba(30,41,59,0.85);color:#fff;padding:3px 8px;border-radius:8px;font-size:10px;font-weight:bold;white-space:nowrap;pointer-events:none;';
+		        el.textContent = complex.complexName;
+		        var overlay = new kakao.maps.CustomOverlay({
+		            position: position,
+		            content: el,
+		            yAnchor: 2.5,
+		            zIndex: 5
+		        });
+		        overlay.setMap(null); // 기본 숨김
+		        marker.nameOverlay = overlay;
+		        markerOverlays.push(overlay);
+
 		        kakao.maps.event.addListener(marker, 'mouseover', function() {
-		            infowindow.setContent('<div style="padding:6px 10px;font-size:12px;font-weight:bold;color:#1E293B;white-space:nowrap;max-width:200px;">' + complex.complexName + '</div>');
-		            infowindow.open(map, marker);
+		            infowindow.close();
 		        });
 		        kakao.maps.event.addListener(marker, 'mouseout', function() { infowindow.close(); });
 		        kakao.maps.event.addListener(marker, 'click', function() {
@@ -481,10 +500,25 @@
 		            map.panTo(position);
 		            if (window.innerWidth <= 768) openPanel();
 		        });
+
 		        return marker;
 		    });
+
 		    clusterer.addMarkers(markers);
+		    updateOverlayVisibility();
 		}
+
+		function updateOverlayVisibility() {
+		    var level = map.getLevel();
+		    markerOverlays.forEach(function(o){
+		        o.setMap(level <= 3 ? map : null);
+		    });
+		}
+
+		// 줌 변경 시 오버레이 표시/숨김
+		kakao.maps.event.addListener(map, 'zoom_changed', function() {
+		    updateOverlayVisibility();
+		});
  
 		kakao.maps.event.addListener(map, 'idle', function() {
 		    if (!dataLoaded) return;
@@ -820,11 +854,42 @@
 		}
  
 		function moveToComplex(complex) {
-			isDetailView = true;
-			var pos = new kakao.maps.LatLng(complex.latitude, complex.longitude);
-			map.setCenter(pos);
-			map.setLevel(3);
-			showComplexDetail(complex);
+		    isDetailView = true;
+		    var pos = new kakao.maps.LatLng(complex.latitude, complex.longitude);
+		    map.setCenter(pos);
+		    map.setLevel(3);
+		    showComplexDetail(complex);
+
+		    // 빨간 마커 표시
+		    var redMarker = new kakao.maps.Marker({
+		        position: pos,
+		        image: new kakao.maps.MarkerImage(
+		            'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+		            new kakao.maps.Size(31, 35)
+		        ),
+		        zIndex: 10
+		    });
+		    redMarker.setMap(map);
+
+		    // 단지명 오버레이
+		    var el = document.createElement('div');
+		    el.style.cssText = 'background:#DC2626;color:#fff;padding:4px 9px;border-radius:10px;font-size:11px;font-weight:bold;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.35);cursor:pointer;';
+		    el.textContent = complex.complexName;
+		    el.onclick = function() { showComplexDetail(complex); };
+		    var overlay = new kakao.maps.CustomOverlay({
+		        position: pos, content: el, yAnchor: 2.2, zIndex: 11
+		    });
+		    overlay.setMap(map);
+
+		    kakao.maps.event.addListener(redMarker, 'click', function() {
+		        showComplexDetail(complex);
+		    });
+
+		    // 10초 후 자동 제거
+		    setTimeout(function() {
+		        redMarker.setMap(null);
+		        overlay.setMap(null);
+		    }, 10000);
 		}
  
 		function checkUrlParam() {
@@ -897,8 +962,7 @@
 		    currentTradeFilter = type;
 		    document.querySelectorAll('.recent-filter-tab').forEach(function(b){ b.classList.remove('active'); });
 		    btn.classList.add('active');
-		    var filtered = type === 'all' ? allRecentTrades : allRecentTrades.filter(function(t){ return t.type === type; });
-		    renderRecentTrades(filtered);
+		    searchRecentTrades(); // ← 검색어 유지하면서 필터 적용
 		}
  
 		function renderRecentTrades(data) {
@@ -991,6 +1055,8 @@
 		        }, 10000);
 
 		        if (window.innerWidth <= 768) openPanel();
+		    }else {
+		        alert('해당 단지의 위치 정보가 정확하지 않습니다.');
 		    }
 		}
 		
@@ -999,7 +1065,9 @@
 		    var base = currentTradeFilter === 'all' ? allRecentTrades 
 		        : allRecentTrades.filter(function(t){ return t.type === currentTradeFilter; });
 		    var filtered = kw 
-		        ? base.filter(function(t){ return t.complexName && t.complexName.includes(kw); })
+		        ? base.filter(function(t){ 
+		            return t.complexName && t.complexName.indexOf(kw) !== -1; 
+		          })
 		        : base;
 		    renderRecentTrades(filtered);
 		}

@@ -117,8 +117,8 @@ public class MainController {
     public List<Map<String, Object>> getRecentTrades() {
         List<Map<String, Object>> result = new ArrayList<>();
  
-        // 매매 최근 30건
-        List<SaleTransactionDto> sales = saleTransactionMapper.selectRecent(30);
+        // 매매 최근 200건
+        List<SaleTransactionDto> sales = saleTransactionMapper.selectRecent(100);
         for (SaleTransactionDto s : sales) {
             Map<String, Object> item = new HashMap<>();
             item.put("type", "매매");
@@ -136,8 +136,8 @@ public class MainController {
             result.add(item);
         }
  
-        // 전월세 최근 30건
-        List<RentTransactionDto> rents = rentTransactionMapper.selectRecent(30);
+        // 전월세 최근 200건
+        List<RentTransactionDto> rents = rentTransactionMapper.selectRecent(100);
         for (RentTransactionDto r : rents) {
             Map<String, Object> item = new HashMap<>();
             item.put("type", r.getRentType() != null ? r.getRentType() : "전세");
@@ -160,6 +160,6 @@ public class MainController {
             .thenComparingInt(m -> -(Integer) m.get("dealMonth"))
             .thenComparingInt(m -> -(Integer) m.get("dealDay")));
  
-        return result.subList(0, Math.min(50, result.size()));
+        return result.subList(0, Math.min(200, result.size()));
     }
 }
