@@ -26,4 +26,7 @@ public interface RentTransactionMapper {
 
     // 단지별 전월세 거래 목록 조회 (최신순)
     List<RentTransactionDto> selectByComplex(@Param("complexId") Long complexId);
+    
+    // 최근 거래현황용 - 전체 최근 전월세 N건
+    List<RentTransactionDto> selectRecent(@Param("limit") int limit);
 }

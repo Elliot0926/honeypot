@@ -35,4 +35,18 @@
         ORDER BY deal_year DESC, deal_month DESC, deal_day DESC
     </select>
 
+        <!-- 최근 거래현황 - 단지별 최신 거래 1건씩 -->
+    <select id="selectRecent" resultType="org.cloud.honeypot.dto.SaleTransactionDto">
+        SELECT s.*, c.complex_name, c.legal_dong
+        FROM sale_transaction s
+        JOIN apt_complex c ON s.complex_id = c.complex_id
+        JOIN (
+            SELECT complex_id, MAX(sale_id) AS max_id
+            FROM sale_transaction
+            GROUP BY complex_id
+        ) latest ON s.sale_id = latest.max_id
+        ORDER BY s.deal_year DESC, s.deal_month DESC, s.deal_day DESC
+        LIMIT #{limit}
+    </select>
+ 
 </mapper>

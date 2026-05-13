@@ -21,4 +21,9 @@ public class RentTransactionDto {
     private Integer dealMonth;    // 거래월
     private Integer dealDay;      // 거래일
     private String createdAt;     // DB 등록일시
+    
+    
+    // 최근 거래현황용 JOIN 필드
+    private String complexName;
+    private String legalDong;
 }

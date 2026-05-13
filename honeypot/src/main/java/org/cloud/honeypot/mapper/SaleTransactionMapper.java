@@ -26,4 +26,8 @@ public interface SaleTransactionMapper {
 
     // 단지별 매매 거래 목록 조회 (최신순)
     List<SaleTransactionDto> selectByComplex(@Param("complexId") Long complexId);
+
+    // 최근 거래현황용 - 전체 최근 매매 N건
+    List<SaleTransactionDto> selectRecent(@Param("limit") int limit);
+
 }

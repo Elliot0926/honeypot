@@ -33,4 +33,18 @@
         ORDER BY deal_year DESC, deal_month DESC, deal_day DESC
     </select>
 
+    <!-- 최근 거래현황 - 단지별 최신 전월세 1건씩 -->
+    <select id="selectRecent" resultType="org.cloud.honeypot.dto.RentTransactionDto">
+        SELECT r.*, c.complex_name, c.legal_dong
+        FROM rent_transaction r
+        JOIN apt_complex c ON r.complex_id = c.complex_id
+        JOIN (
+            SELECT complex_id, MAX(rent_id) AS max_id
+            FROM rent_transaction
+            GROUP BY complex_id
+        ) latest ON r.rent_id = latest.max_id
+        ORDER BY r.deal_year DESC, r.deal_month DESC, r.deal_day DESC
+        LIMIT #{limit}
+    </select>
+ 
 </mapper>

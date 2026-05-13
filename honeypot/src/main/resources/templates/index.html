@@ -7,38 +7,220 @@
 <link rel="stylesheet" th:href="@{/css/style.css}">
 <script type="text/javascript"
 	src="//dapi.kakao.com/v2/maps/sdk.js?appkey=0388e9d32295924bc9eefff22d8688a4&libraries=services,clusterer">
-	
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+/* 최근 거래현황 버튼 */
+.recent-trade-btn {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    z-index: 200;
+    background: #1A6B9A;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s;
+}
+.recent-trade-btn:hover { background: #155a82; }
+ 
+/* 최근 거래현황 패널 */
+.recent-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 360px;
+    height: 100%;
+    background: #fff;
+    z-index: 300;
+    box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+}
+.recent-panel.open {
+    transform: translateX(0);
+}
+.recent-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid #E2E8F0;
+    background: #F8FAFC;
+}
+.recent-panel-header h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1E293B;
+    margin: 0;
+}
+.recent-panel-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #64748B;
+    line-height: 1;
+    padding: 2px 6px;
+}
+.recent-panel-close:hover { color: #1E293B; }
+ 
+/* 필터 탭 */
+.recent-filter-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #E2E8F0;
+}
+.recent-filter-tab {
+    flex: 1;
+    padding: 6px 0;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #64748B;
+    transition: all 0.15s;
+}
+.recent-filter-tab.active {
+    border-color: #1A6B9A;
+    background: #1A6B9A;
+    color: #fff;
+}
+.recent-filter-tab.sale-tab.active { background: #1A6B9A; border-color: #1A6B9A; }
+.recent-filter-tab.rent-tab.active { background: #0D9488; border-color: #0D9488; }
+.recent-filter-tab.monthly-tab.active { background: #f59e0b; border-color: #f59e0b; }
+ 
+/* 거래 목록 */
+.recent-trade-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+.recent-trade-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    padding: 12px 14px;
+    border-bottom: 1px solid #F1F5F9;
+    cursor: pointer;
+    transition: background 0.1s;
+    gap: 4px;
+}
+.recent-trade-item:hover { background: #F8FAFC; }
+.trade-item-left { min-width: 0; }
+.trade-complex-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1E293B;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 3px;
+}
+.trade-meta {
+    font-size: 11px;
+    color: #94A3B8;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.trade-dong-tag {
+    background: #F1F5F9;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 10px;
+    color: #64748B;
+}
+.trade-item-right {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+    min-width: 80px;
+}
+.trade-price {
+    font-size: 14px;
+    font-weight: 700;
+}
+.trade-price.sale { color: #1A6B9A; }
+.trade-price.rent { color: #0D9488; }
+.trade-price.monthly { color: #d97706; }
+.trade-type-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+.badge-sale { background: #DBEAFE; color: #1A6B9A; }
+.badge-rent { background: #D1FAE5; color: #065F46; }
+.badge-monthly { background: #FEF3C7; color: #92400E; }
+ 
+/* 로딩 */
+.recent-loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: #94A3B8;
+    font-size: 13px;
+}
+ 
+@media (max-width: 768px) {
+    .recent-panel { width: 100%; }
+    .recent-trade-btn { top: 10px; right: 10px; font-size: 12px; padding: 7px 11px; }
+}
+
+.btn-recent {
+    background: #1A6B9A;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 13px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.btn-recent:hover { background: #155a82; }
+
+</style>
 </head>
 <body>
-<!-- 로그인 여부를 JS에서 쓸 수 있게 전달 -->
 <input type="hidden" id="isLoggedIn" th:value="${loginMember != null}">
-
+ 
 	<nav class="navbar">
     <a href="/" class="navbar-brand">🍯 꿀단지</a>
     <div class="navbar-right">
-        <!-- 비로그인 -->
         <th:block th:if="${loginMember == null}">
             <a th:href="@{/member/login}" class="btn-login">로그인</a>
             <a th:href="@{/member/join}" class="btn-login">회원가입</a>
         </th:block>
-        <!-- 일반 회원 -->
         <th:block th:if="${loginMember != null and loginMember.role == 'USER'}">
             <span class="welcome-text" th:text="${loginMember.name} + '님'"></span>
             <a th:href="@{/member/mypage}" class="btn-login">마이페이지</a>
             <a th:href="@{/member/logout}" class="btn-login btn-logout">로그아웃</a>
         </th:block>
-        <!-- 관리자 -->
         <th:block th:if="${loginMember != null and loginMember.role == 'ADMIN'}">
             <span class="welcome-text" th:text="${loginMember.name} + '님'"></span>
             <a th:href="@{/member/mypage}" class="btn-login">마이페이지</a>
             <a th:href="@{/admin/collect}" class="btn-login">관리자</a>
             <a th:href="@{/member/logout}" class="btn-login btn-logout">로그아웃</a>
         </th:block>
+        <button onclick="openRecentPanel()" class="btn-recent">📋 최근 거래현황</button>
     </div>
 </nav>
-
+ 
 	<div class="main-layout">
 		<div class="side-panel" id="sidePanel">
 			<div class="panel-header">
@@ -50,25 +232,23 @@
 					</div>
 					<div class="search-dropdown" id="searchDropdown"></div>
 				</div>
-				<!-- 동 필터 버튼 -->
 				<div class="dong-filter" id="dongFilter">
 					<button class="dong-btn active" onclick="filterByDong(null, this)">전체</button>
 				</div>
-				<!-- 년도 필터 -->
 			<div class="year-filter">
     			<span class="year-label">건축연도</span>
     			<input type="number" id="yearFrom" placeholder="1990" min="1970" max="2025">
-  			 	 <span>~</span>
-   			 <input type="number" id="yearTo" placeholder="2025" min="1970" max="2025">
-  			  <button onclick="filterByYear()">적용</button>
-   			 <button onclick="resetYearFilter()">초기화</button>
+  			 	<span>~</span>
+   			 	<input type="number" id="yearTo" placeholder="2025" min="1970" max="2025">
+  			  	<button onclick="filterByYear()">적용</button>
+   			 	<button onclick="resetYearFilter()">초기화</button>
 			</div>
 			</div>
 			<div class="complex-list" id="complexList">
 				<p class="list-placeholder">지도를 움직여 단지를 탐색하세요</p>
 			</div>
 		</div>
-
+ 
 		<div class="map-container">
 			<div id="map"></div>
 			<button class="panel-toggle-btn" id="panelToggleBtn"
@@ -77,11 +257,35 @@
 			</button>
 			<button class="current-location-btn"
 				onclick="moveToCurrentLocation()" title="현재 위치로 이동">📍</button>
+ 
+			
+ 
+			<!-- 최근 거래현황 패널 -->
+			<div class="recent-panel" id="recentPanel">
+				<div class="recent-panel-header">
+					<h3>📋 최근 거래현황</h3>
+					<button class="recent-panel-close" onclick="closeRecentPanel()">✕</button>
+				</div>
+				<div class="recent-filter-tabs">
+					<button class="recent-filter-tab active" id="filterAll" onclick="filterRecentTrades('all', this)">전체</button>
+					<button class="recent-filter-tab sale-tab" id="filterSale" onclick="filterRecentTrades('매매', this)">매매</button>
+					<button class="recent-filter-tab rent-tab" id="filterRent" onclick="filterRecentTrades('전세', this)">전세</button>
+					<button class="recent-filter-tab monthly-tab" id="filterMonthly" onclick="filterRecentTrades('월세', this)">월세</button>
+				</div>
+				<div style="padding:8px 14px;border-bottom:1px solid #E2E8F0;">
+    			<input type="text" id="recentSearchInput" placeholder="🔍 단지명 검색"
+       			 oninput="searchRecentTrades()"
+       			 style="width:100%;padding:7px 10px;border:1px solid #E2E8F0;border-radius:6px;font-size:13px;box-sizing:border-box;">
+				</div>
+				<div class="recent-trade-list" id="recentTradeList">
+					<div class="recent-loading">불러오는 중...</div>
+				</div>
+			</div>
 		</div>
 	</div>
-
+ 
 	<div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
-
+ 
 	<script>
 		//=====================
 		//카카오맵 초기화
@@ -92,11 +296,10 @@
 		});
 		map.addControl(new kakao.maps.ZoomControl(),
 				kakao.maps.ControlPosition.RIGHT);
-
+ 
 		var allComplexes = [];
 		var dataLoaded = false;
-		
-
+ 
 		//=====================
 		//클러스터러
 		//=====================
@@ -147,81 +350,57 @@
 				cursor : 'pointer'
 			} ]
 		});
-
-		//클러스터 클릭 → 줌인 + 패널 필터링
-kakao.maps.event.addListener(clusterer, 'clusterclick', function(cluster) {
-    var center = cluster.getCenter();
-    var level = map.getLevel();
-    var radius = level * 60;
-
-    var proj = map.getProjection();
-    var centerPoint = proj.pointFromCoords(center);
-
-    var nearMarkers = [];
-    clusterer.getMarkers().forEach(function(m) {
-        var mPoint = proj.pointFromCoords(m.getPosition());
-        var dx = centerPoint.x - mPoint.x;
-        var dy = centerPoint.y - mPoint.y;
-        if (Math.sqrt(dx*dx + dy*dy) < radius) {
-            nearMarkers.push(m);
-        }
-    });
-
-    console.log('근처 마커 수:', nearMarkers.length);
-
-    var filtered = nearMarkers.map(function(m){ return m.complexData; });
-    if (filtered.length > 0) updateComplexList(filtered);
-    if (window.innerWidth <= 768) openPanel();
-
-    var redMarkers = [];
-    var redOverlays = [];
-
-    nearMarkers.forEach(function(m) {
-        var pos = m.getPosition();
-        var complex = m.complexData;
-
-        var redMarker = new kakao.maps.Marker({
-            position: pos,
-            image: new kakao.maps.MarkerImage(
-                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
-                new kakao.maps.Size(31, 35)
-            ),
-            zIndex: 10
-        });
-        redMarker.setMap(map);
-        redMarkers.push(redMarker);
-        
-    	 // 빨간 마커 클릭 이벤트 추가
-        kakao.maps.event.addListener(redMarker, 'click', function() {
-            showComplexDetail(complex);
-            map.panTo(pos);
-            if (window.innerWidth <= 768) openPanel();
-        });
-
-        var el = document.createElement('div');
-        el.style.cssText = 'background:#DC2626;color:#fff;padding:4px 9px;border-radius:10px;font-size:11px;font-weight:bold;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.35);pointer-events:none;';
-        el.textContent = complex.complexName;
-
-        var overlay = new kakao.maps.CustomOverlay({
-            position: pos,
-            content: el,
-            yAnchor: 2.2,
-            zIndex: 11
-        });
-        overlay.setMap(map);
-        redOverlays.push(overlay);
-    });
-
-    setTimeout(function() {
-        map.setLevel(level - 1, { anchor: center });
-    }, 100);
-
-    setTimeout(function() {
-        redMarkers.forEach(function(m){ m.setMap(null); });
-        redOverlays.forEach(function(o){ o.setMap(null); });
-    }, 12000);
-});
-		
+ 
+		kakao.maps.event.addListener(clusterer, 'clusterclick', function(cluster) {
+		    var center = cluster.getCenter();
+		    var level = map.getLevel();
+		    var radius = level * 60;
+		    var proj = map.getProjection();
+		    var centerPoint = proj.pointFromCoords(center);
+		    var nearMarkers = [];
+		    clusterer.getMarkers().forEach(function(m) {
+		        var mPoint = proj.pointFromCoords(m.getPosition());
+		        var dx = centerPoint.x - mPoint.x;
+		        var dy = centerPoint.y - mPoint.y;
+		        if (Math.sqrt(dx*dx + dy*dy) < radius) nearMarkers.push(m);
+		    });
+		    var filtered = nearMarkers.map(function(m){ return m.complexData; });
+		    if (filtered.length > 0) updateComplexList(filtered);
+		    if (window.innerWidth <= 768) openPanel();
+		    var redMarkers = [];
+		    var redOverlays = [];
+		    nearMarkers.forEach(function(m) {
+		        var pos = m.getPosition();
+		        var complex = m.complexData;
+		        var redMarker = new kakao.maps.Marker({
+		            position: pos,
+		            image: new kakao.maps.MarkerImage(
+		                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+		                new kakao.maps.Size(31, 35)
+		            ),
+		            zIndex: 10
+		        });
+		        redMarker.setMap(map);
+		        redMarkers.push(redMarker);
+		        kakao.maps.event.addListener(redMarker, 'click', function() {
+		            showComplexDetail(complex);
+		            map.panTo(pos);
+		            if (window.innerWidth <= 768) openPanel();
+		        });
+		        var el = document.createElement('div');
+		        el.style.cssText = 'background:#DC2626;color:#fff;padding:4px 9px;border-radius:10px;font-size:11px;font-weight:bold;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.35);pointer-events:none;';
+		        el.textContent = complex.complexName;
+		        var overlay = new kakao.maps.CustomOverlay({ position: pos, content: el, yAnchor: 2.2, zIndex: 11 });
+		        overlay.setMap(map);
+		        redOverlays.push(overlay);
+		    });
+		    setTimeout(function() { map.setLevel(level - 1, { anchor: center }); }, 100);
+		    setTimeout(function() {
+		        redMarkers.forEach(function(m){ m.setMap(null); });
+		        redOverlays.forEach(function(o){ o.setMap(null); });
+		    }, 12000);
+		});
+ 
 		function buildDongButtons(data) {
 		    var dongs = [];
 		    data.forEach(function(c) {
@@ -237,7 +416,7 @@ kakao.maps.event.addListener(clusterer, 'clusterclick', function(cluster) {
 		        container.appendChild(btn);
 		    });
 		}
-		
+ 
 		var isDetailView = false;
 		var currentDong = null;
 		function filterByDong(dong, btn) {
@@ -253,56 +432,45 @@ kakao.maps.event.addListener(clusterer, 'clusterclick', function(cluster) {
 		    }
 		    applyFilters();
 		}
-		
-		//=====================
-		//데이터 로드
-		//=====================
-			var currentYearFrom = null;
-var currentYearTo = null;
-
-function applyFilters() {
-    var filtered = allComplexes.filter(function(c) {
-        var dongOk = !currentDong || c.legalDong === currentDong;
-        var yearOk = true;
-        if (currentYearFrom && c.buildYear) yearOk = c.buildYear >= currentYearFrom;
-        if (currentYearTo && c.buildYear) yearOk = yearOk && c.buildYear <= currentYearTo;
-        return dongOk && yearOk;
-    });
-    updateComplexList(filtered);
-}
-
-function filterByYear() {
-    currentYearFrom = parseInt(document.getElementById('yearFrom').value) || null;
-    currentYearTo = parseInt(document.getElementById('yearTo').value) || null;
-    applyFilters();
-}
-
-function resetYearFilter() {
-    currentYearFrom = null;
-    currentYearTo = null;
-    document.getElementById('yearFrom').value = '';
-    document.getElementById('yearTo').value = '';
-    applyFilters();
-}
-			
-
-		var infowindow = new kakao.maps.InfoWindow({
-			zIndex : 10
-		});
-
+ 
+		var currentYearFrom = null;
+		var currentYearTo = null;
+ 
+		function applyFilters() {
+		    var filtered = allComplexes.filter(function(c) {
+		        var dongOk = !currentDong || c.legalDong === currentDong;
+		        var yearOk = true;
+		        if (currentYearFrom && c.buildYear) yearOk = c.buildYear >= currentYearFrom;
+		        if (currentYearTo && c.buildYear) yearOk = yearOk && c.buildYear <= currentYearTo;
+		        return dongOk && yearOk;
+		    });
+		    updateComplexList(filtered);
+		}
+ 
+		function filterByYear() {
+		    currentYearFrom = parseInt(document.getElementById('yearFrom').value) || null;
+		    currentYearTo = parseInt(document.getElementById('yearTo').value) || null;
+		    applyFilters();
+		}
+ 
+		function resetYearFilter() {
+		    currentYearFrom = null;
+		    currentYearTo = null;
+		    document.getElementById('yearFrom').value = '';
+		    document.getElementById('yearTo').value = '';
+		    applyFilters();
+		}
+ 
+		var infowindow = new kakao.maps.InfoWindow({ zIndex : 10 });
+ 
 		function buildMarkers(data) {
 		    clusterer.clear();
-
 		    var markers = data.map(function(complex) {
 		        var position = new kakao.maps.LatLng(complex.latitude, complex.longitude);
 		        var marker = new kakao.maps.Marker({ position: position });
 		        marker.complexData = complex;
-
 		        kakao.maps.event.addListener(marker, 'mouseover', function() {
-		            infowindow.setContent(
-		                '<div style="padding:6px 10px;font-size:12px;font-weight:bold;color:#1E293B;white-space:nowrap;max-width:200px;">'
-		                + complex.complexName + '</div>'
-		            );
+		            infowindow.setContent('<div style="padding:6px 10px;font-size:12px;font-weight:bold;color:#1E293B;white-space:nowrap;max-width:200px;">' + complex.complexName + '</div>');
 		            infowindow.open(map, marker);
 		        });
 		        kakao.maps.event.addListener(marker, 'mouseout', function() { infowindow.close(); });
@@ -313,77 +481,57 @@ function resetYearFilter() {
 		            map.panTo(position);
 		            if (window.innerWidth <= 768) openPanel();
 		        });
-
 		        return marker;
 		    });
-
 		    clusterer.addMarkers(markers);
 		}
-		
-
-		// 지도 이동시 패널 목록 업데이트
-	kakao.maps.event.addListener(map, 'idle', function() {
-    if (!dataLoaded) return;
-    if (currentDong) return;
-    if (isDetailView) return;
-    var bounds = map.getBounds();
-    var sw = bounds.getSouthWest();
-    var ne = bounds.getNorthEast();
-    var visible = allComplexes.filter(function(c) {
-        var inBounds = c.latitude >= sw.getLat() && c.latitude <= ne.getLat()
-            && c.longitude >= sw.getLng() && c.longitude <= ne.getLng();
-        var yearOk = true;
-        if (currentYearFrom && c.buildYear) yearOk = c.buildYear >= currentYearFrom;
-        if (currentYearTo && c.buildYear) yearOk = yearOk && c.buildYear <= currentYearTo;
-        return inBounds && yearOk;
-    });
-    updateComplexList(visible);
-});
-
+ 
+		kakao.maps.event.addListener(map, 'idle', function() {
+		    if (!dataLoaded) return;
+		    if (currentDong) return;
+		    if (isDetailView) return;
+		    var bounds = map.getBounds();
+		    var sw = bounds.getSouthWest();
+		    var ne = bounds.getNorthEast();
+		    var visible = allComplexes.filter(function(c) {
+		        var inBounds = c.latitude >= sw.getLat() && c.latitude <= ne.getLat()
+		            && c.longitude >= sw.getLng() && c.longitude <= ne.getLng();
+		        var yearOk = true;
+		        if (currentYearFrom && c.buildYear) yearOk = c.buildYear >= currentYearFrom;
+		        if (currentYearTo && c.buildYear) yearOk = yearOk && c.buildYear <= currentYearTo;
+		        return inBounds && yearOk;
+		    });
+		    updateComplexList(visible);
+		});
+ 
 		//=====================
 		//패널 목록
 		//=====================
 		function updateComplexList(data) {
 			var html = '<div class="list-count">' + data.length + '개 단지</div>';
-			html += data
-					.map(
-							function(c) {
-								return '<div class="complex-item" onclick=\'moveToComplex('
-										+ JSON.stringify(c)
-										+ ')\'>'
-										+ '<div class="complex-name">'
-										+ c.complexName
-										+ '</div>'
-										+ '<div class="complex-meta">'
-										+ '<span class="tag-dong">'
-										+ (c.legalDong || '')
-										+ '</span>'
-										+ (c.buildYear ? '<span class="tag-year">'
-												+ c.buildYear + '년</span>'
-												: '')
-										+ (c.householdCount ? '<span class="tag-household">'
-												+ c.householdCount
-												+ '세대</span>'
-												: '') + '</div></div>';
-							}).join('');
+			html += data.map(function(c) {
+				return '<div class="complex-item" onclick=\'moveToComplex(' + JSON.stringify(c) + ')\'>'
+					+ '<div class="complex-name">' + c.complexName + '</div>'
+					+ '<div class="complex-meta">'
+					+ '<span class="tag-dong">' + (c.legalDong || '') + '</span>'
+					+ (c.buildYear ? '<span class="tag-year">' + c.buildYear + '년</span>' : '')
+					+ (c.householdCount ? '<span class="tag-household">' + c.householdCount + '세대</span>' : '')
+					+ '</div></div>';
+			}).join('');
 			document.getElementById('complexList').innerHTML = html;
 		}
-
+ 
 		//=====================
 		//단지 상세
 		//=====================
-		var currentChart = null; // 차트 인스턴스 저장
+		var currentChart = null;
 		function showComplexDetail(complex) {
 		    isDetailView = true;
-
-		 // 로그인 여부 확인
 		    var loggedIn = document.getElementById('isLoggedIn').value === 'true';
 		    var favoriteBtn = loggedIn
-		        ? '<button class="favorite-btn" id="favoriteBtn" onclick="toggleFavorite(' + complex.complexId + ')">'
-		          + '<span id="favoriteIcon">☆</span> 즐겨찾기</button>'
-		        : '<button class="favorite-btn" onclick="alert(\'로그인 후 이용 가능합니다.\')" style="color:#94A3B8;border-color:#E2E8F0;">'
-		          + '🔒 즐겨찾기 (로그인 필요)</button>';
-
+		        ? '<button class="favorite-btn" id="favoriteBtn" onclick="toggleFavorite(' + complex.complexId + ')"><span id="favoriteIcon">☆</span> 즐겨찾기</button>'
+		        : '<button class="favorite-btn" onclick="alert(\'로그인 후 이용 가능합니다.\')" style="color:#94A3B8;border-color:#E2E8F0;">🔒 즐겨찾기 (로그인 필요)</button>';
+ 
 		    document.getElementById('complexList').innerHTML =
 		        '<div class="detail-wrap">'
 		        + '<button class="back-btn" onclick="backToList()">← 목록으로</button>'
@@ -398,97 +546,66 @@ function resetYearFilter() {
 		        + '<div class="detail-card"><span class="dc-label">동수</span><span class="dc-value">' + (complex.dongCount ? complex.dongCount+'동' : '-') + '</span></div>'
 		        + '<div class="detail-card"><span class="dc-label">주소</span><span class="dc-value">' + (complex.jibunAddress||'-') + '</span></div>'
 		        + '</div>'
-		        // 탭 버튼
 		        + '<div class="chart-tabs">'
-				+ '<button class="chart-tab active" id="tabSale" onclick="showTab(\'sale\', ' + complex.complexId + ')">📈 매매</button>'
-				+ '<button class="chart-tab" id="tabRent" onclick="showTab(\'rent\', ' + complex.complexId + ')">🏠 전월세</button>'
-				+ '</div>'
-				+ '<div style="padding:6px 0 4px;display:flex;align-items:center;gap:8px;">'
-				+ '<span style="font-size:12px;color:#64748B;">거래월</span>'
-				+ '<select id="monthSelect" style="flex:1;padding:4px 8px;border:1px solid #E2E8F0;border-radius:4px;font-size:12px;" onchange="onMonthChange(' + complex.complexId + ')">'
-				+ '<option value="all">전체</option>'
-				+ '<option value="2023-01">2023년 1월</option>'
-				+ '<option value="2023-02">2023년 2월</option>'
-				+ '<option value="2023-03">2023년 3월</option>'
-				+ '<option value="2023-04">2023년 4월</option>'
-				+ '<option value="2023-05">2023년 5월</option>'
-				+ '<option value="2023-06">2023년 6월</option>'
-				+ '<option value="2023-07">2023년 7월</option>'
-				+ '<option value="2023-08">2023년 8월</option>'
-				+ '<option value="2023-09">2023년 9월</option>'
-				+ '<option value="2023-10">2023년 10월</option>'
-				+ '<option value="2023-11">2023년 11월</option>'
-				+ '<option value="2023-12">2023년 12월</option>'
-				+ '<option value="2024-01">2024년 1월</option>'
-				+ '<option value="2024-02">2024년 2월</option>'
-				+ '<option value="2024-03">2024년 3월</option>'
-				+ '<option value="2024-04">2024년 4월</option>'
-				+ '<option value="2024-05">2024년 5월</option>'
-				+ '<option value="2024-06">2024년 6월</option>'
-				+ '<option value="2024-07">2024년 7월</option>'
-				+ '<option value="2024-08">2024년 8월</option>'
-				+ '<option value="2024-09">2024년 9월</option>'
-				+ '<option value="2024-10">2024년 10월</option>'
-				+ '<option value="2024-11">2024년 11월</option>'
-				+ '<option value="2024-12">2024년 12월</option>'
-				+ '<option value="2025-01">2025년 1월</option>'
-				+ '<option value="2025-02">2025년 2월</option>'
-				+ '<option value="2025-03">2025년 3월</option>'
-				+ '<option value="2025-04">2025년 4월</option>'
-				+ '<option value="2025-05">2025년 5월</option>'
-				+ '</select>'
-				+ '</div>'
-				+ '<div class="chart-wrap" id="chartWrap">'
-				+ '<canvas id="priceChart"></canvas>'
-				+ '</div>'
-				+ '<div id="noDataMsg" style="display:none;text-align:center;padding:20px;font-size:13px;color:#94A3B8;">거래 데이터가 없습니다</div>'
-				+ '<div id="tradeList"></div>'
-				+ '</div>';
-
-			checkFavoriteStatus(complex.complexId);
-		    showTab('sale', complex.complexId); // 기본 매매 탭
+		        + '<button class="chart-tab active" id="tabSale" onclick="showTab(\'sale\', ' + complex.complexId + ')">📈 매매</button>'
+		        + '<button class="chart-tab" id="tabRent" onclick="showTab(\'rent\', ' + complex.complexId + ')">🏠 전월세</button>'
+		        + '</div>'
+		        + '<div style="padding:6px 0 4px;display:flex;align-items:center;gap:8px;">'
+		        + '<span style="font-size:12px;color:#64748B;">거래월</span>'
+		        + '<select id="monthSelect" style="flex:1;padding:4px 8px;border:1px solid #E2E8F0;border-radius:4px;font-size:12px;" onchange="onMonthChange(' + complex.complexId + ')">'
+		        + '<option value="all">전체</option>'
+		        + generateMonthOptions()
+		        + '</select>'
+		        + '</div>'
+		        + '<div class="chart-wrap" id="chartWrap"><canvas id="priceChart"></canvas></div>'
+		        + '<div id="noDataMsg" style="display:none;text-align:center;padding:20px;font-size:13px;color:#94A3B8;">거래 데이터가 없습니다</div>'
+		        + '<div id="tradeList"></div>'
+		        + '</div>';
+ 
+		    checkFavoriteStatus(complex.complexId);
+		    showTab('sale', complex.complexId);
 		}
-
+ 
+		function generateMonthOptions() {
+		    var html = '';
+		    var years = [2023, 2024, 2025];
+		    years.forEach(function(y) {
+		        for (var m = 1; m <= 12; m++) {
+		            var val = y + '-' + String(m).padStart(2,'0');
+		            html += '<option value="' + val + '">' + y + '년 ' + m + '월</option>';
+		        }
+		    });
+		    return html;
+		}
+ 
 		var currentTabType = 'sale';
 		var currentComplexId = null;
 		var currentTabData = [];
-
+ 
 		function showTab(type, complexId) {
 		    currentTabType = type;
 		    currentComplexId = complexId;
 		    document.getElementById('tabSale').classList.toggle('active', type === 'sale');
 		    document.getElementById('tabRent').classList.toggle('active', type === 'rent');
-
-		    var url = type === 'sale'
-		        ? '/api/sale?complexId=' + complexId
-		        : '/api/rent?complexId=' + complexId;
-
-		    fetch(url)
-		    .then(function(r){ return r.json(); })
-		    .then(function(data){
+		    var url = type === 'sale' ? '/api/sale?complexId=' + complexId : '/api/rent?complexId=' + complexId;
+		    fetch(url).then(function(r){ return r.json(); }).then(function(data){
 		        currentTabData = data;
 		        renderTabData(data);
 		    });
 		}
-
-		function onMonthChange(complexId) {
-		    renderTabData(currentTabData);
-		}
-
+ 
+		function onMonthChange(complexId) { renderTabData(currentTabData); }
+ 
 		function renderTabData(data) {
 		    var monthSelect = document.getElementById('monthSelect');
 		    var selectedMonth = monthSelect ? monthSelect.value : 'all';
-
 		    var filtered = data;
 		    if (selectedMonth !== 'all') {
 		        var parts = selectedMonth.split('-');
 		        var yr = parseInt(parts[0]);
 		        var mo = parseInt(parts[1]);
-		        filtered = data.filter(function(d) {
-		            return d.dealYear === yr && d.dealMonth === mo;
-		        });
+		        filtered = data.filter(function(d){ return d.dealYear === yr && d.dealMonth === mo; });
 		    }
-
 		    if (!filtered || filtered.length === 0) {
 		        document.getElementById('chartWrap').style.display = 'none';
 		        document.getElementById('noDataMsg').style.display = 'block';
@@ -497,7 +614,6 @@ function resetYearFilter() {
 		    }
 		    document.getElementById('chartWrap').style.display = 'block';
 		    document.getElementById('noDataMsg').style.display = 'none';
-
 		    if (currentTabType === 'sale') {
 		        drawSaleChart(selectedMonth === 'all' ? data : filtered);
 		        drawSaleTable(filtered);
@@ -506,9 +622,8 @@ function resetYearFilter() {
 		        drawRentTable(filtered);
 		    }
 		}
-
+ 
 		function drawSaleChart(data) {
-		    // 월별 평균 매매가 계산
 		    var monthMap = {};
 		    data.forEach(function(d) {
 		        var key = d.dealYear + '-' + String(d.dealMonth).padStart(2,'0');
@@ -516,39 +631,29 @@ function resetYearFilter() {
 		        monthMap[key].sum += d.dealAmount;
 		        monthMap[key].cnt++;
 		    });
-
 		    var labels = Object.keys(monthMap).sort();
-		    var values = labels.map(function(k){
-		        return Math.round(monthMap[k].sum / monthMap[k].cnt);
-		    });
-
+		    var values = labels.map(function(k){ return Math.round(monthMap[k].sum / monthMap[k].cnt); });
 		    renderChart(labels, values, '평균 매매가 (만원)', '#1A6B9A');
 		}
-		
+ 
 		function drawSaleTable(data) {
 		    var recent = data.slice(0, 50);
-		    var html = '<table class="trade-table"><thead><tr>'
-		        + '<th>날짜</th><th>면적</th><th>층</th><th>거래금액</th>'
-		        + '</tr></thead><tbody>';
+		    var html = '<table class="trade-table"><thead><tr><th>날짜</th><th>면적</th><th>층</th><th>거래금액</th></tr></thead><tbody>';
 		    recent.forEach(function(d) {
 		        html += '<tr>'
 		            + '<td>' + d.dealYear + '.' + String(d.dealMonth).padStart(2,'0') + '.' + String(d.dealDay).padStart(2,'0') + '</td>'
 		            + '<td>' + (d.area ? d.area + '㎡' : '-') + '</td>'
 		            + '<td>' + (d.floor ? d.floor + '층' : '-') + '</td>'
-		            + '<td class="price-cell">' + (d.dealAmount >= 10000 
-		            	    ? (d.dealAmount / 10000).toFixed(1) + '억' 
-		            	    	    : d.dealAmount.toLocaleString() + '만') + '</td>'
+		            + '<td class="price-cell">' + (d.dealAmount >= 10000 ? (d.dealAmount / 10000).toFixed(1) + '억' : d.dealAmount.toLocaleString() + '만') + '</td>'
 		            + '</tr>';
 		    });
 		    html += '</tbody></table>';
 		    document.getElementById('tradeList').innerHTML = html;
 		}
-
+ 
 		function drawRentTable(data) {
-		    var recent = data.slice(0, 5);
-		    var html = '<table class="trade-table"><thead><tr>'
-		        + '<th>날짜</th><th>면적</th><th>층</th><th>보증금/월세</th>'
-		        + '</tr></thead><tbody>';
+		    var recent = data.slice(0, 50);
+		    var html = '<table class="trade-table"><thead><tr><th>날짜</th><th>면적</th><th>층</th><th>보증금/월세</th></tr></thead><tbody>';
 		    recent.forEach(function(d) {
 		        var price = d.monthlyRent > 0
 		            ? d.deposit.toLocaleString() + '/' + d.monthlyRent.toLocaleString() + '만'
@@ -563,9 +668,8 @@ function resetYearFilter() {
 		    html += '</tbody></table>';
 		    document.getElementById('tradeList').innerHTML = html;
 		}
-
+ 
 		function drawRentChart(data) {
-		    // 월별 평균 보증금 계산
 		    var monthMap = {};
 		    data.forEach(function(d) {
 		        var key = d.dealYear + '-' + String(d.dealMonth).padStart(2,'0');
@@ -573,106 +677,55 @@ function resetYearFilter() {
 		        monthMap[key].sum += d.deposit;
 		        monthMap[key].cnt++;
 		    });
-
 		    var labels = Object.keys(monthMap).sort();
-		    var values = labels.map(function(k){
-		        return Math.round(monthMap[k].sum / monthMap[k].cnt);
-		    });
-
+		    var values = labels.map(function(k){ return Math.round(monthMap[k].sum / monthMap[k].cnt); });
 		    renderChart(labels, values, '평균 보증금 (만원)', '#0D9488');
 		}
-
+ 
 		function renderChart(labels, values, label, color) {
-		    if (currentChart) {
-		        currentChart.destroy();
-		        currentChart = null;
-		    }
+		    if (currentChart) { currentChart.destroy(); currentChart = null; }
 		    var ctx = document.getElementById('priceChart').getContext('2d');
 		    currentChart = new Chart(ctx, {
 		        type: 'line',
 		        data: {
 		            labels: labels,
-		            datasets: [{
-		                label: label,
-		                data: values,
-		                borderColor: color,
-		                backgroundColor: color + '22',
-		                borderWidth: 2,
-		                pointRadius: 4,
-		                pointBackgroundColor: color,
-		                tension: 0.3,
-		                fill: true
-		            }]
+		            datasets: [{ label: label, data: values, borderColor: color, backgroundColor: color + '22', borderWidth: 2, pointRadius: 4, pointBackgroundColor: color, tension: 0.3, fill: true }]
 		        },
 		        options: {
 		            responsive: true,
 		            plugins: {
 		                legend: { display: false },
-		                tooltip: {
-		                    callbacks: {
-		                        label: function(ctx) {
-		                            var v = ctx.parsed.y;
-		                            return v >= 10000 
-		                                ? (v / 10000).toFixed(1) + '억원'
-		                                : v.toLocaleString() + '만원';
-		                        }
-		                    }
-		                }
+		                tooltip: { callbacks: { label: function(ctx) { var v = ctx.parsed.y; return v >= 10000 ? (v/10000).toFixed(1)+'억원' : v.toLocaleString()+'만원'; } } }
 		            },
-		            scales: {
-		                y: {
-		                    ticks: {
-		                        callback: function(v) {
-		                            return v.toLocaleString() + '만';
-		                        }
-		                    }
-		                }
-		            }
+		            scales: { y: { ticks: { callback: function(v){ return v.toLocaleString()+'만'; } } } }
 		        }
 		    });
 		}
-function checkFavoriteStatus(complexId) {
-    fetch('/api/favorite/check?complexId=' + complexId)
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-        var btn = document.getElementById('favoriteBtn');
-        if (!btn) return;
-        if (data.isFavorite) {
-            btn.classList.add('favorited');
-            document.getElementById('favoriteIcon').textContent = '★';
-        } else {
-            btn.classList.remove('favorited');
-            document.getElementById('favoriteIcon').textContent = '☆';
-        }
-    });
-}
-
-function toggleFavorite(complexId) {
-    fetch('/api/favorite/toggle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'complexId=' + complexId
-    })
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-        if (!data.success) {
-            alert('로그인이 필요합니다.');
-            return;
-        }
-        var btn = document.getElementById('favoriteBtn');
-        if (data.added) {
-            btn.classList.add('favorited');
-            document.getElementById('favoriteIcon').textContent = '★';
-        } else {
-            btn.classList.remove('favorited');
-            document.getElementById('favoriteIcon').textContent = '☆';
-        }
-    });
-}
-
+ 
+		function checkFavoriteStatus(complexId) {
+		    fetch('/api/favorite/check?complexId=' + complexId)
+		    .then(function(r){ return r.json(); })
+		    .then(function(data){
+		        var btn = document.getElementById('favoriteBtn');
+		        if (!btn) return;
+		        if (data.isFavorite) { btn.classList.add('favorited'); document.getElementById('favoriteIcon').textContent = '★'; }
+		        else { btn.classList.remove('favorited'); document.getElementById('favoriteIcon').textContent = '☆'; }
+		    });
+		}
+ 
+		function toggleFavorite(complexId) {
+		    fetch('/api/favorite/toggle', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'complexId=' + complexId })
+		    .then(function(r){ return r.json(); })
+		    .then(function(data){
+		        if (!data.success) { alert('로그인이 필요합니다.'); return; }
+		        var btn = document.getElementById('favoriteBtn');
+		        if (data.added) { btn.classList.add('favorited'); document.getElementById('favoriteIcon').textContent = '★'; }
+		        else { btn.classList.remove('favorited'); document.getElementById('favoriteIcon').textContent = '☆'; }
+		    });
+		}
+ 
 		function backToList() {
-		    // 현재 필터 상태 유지하면서 목록으로
-		     isDetailView = false;
+		    isDetailView = false;
 		    if (currentDong) {
 		        applyFilters();
 		    } else {
@@ -680,8 +733,7 @@ function toggleFavorite(complexId) {
 		        var sw = bounds.getSouthWest();
 		        var ne = bounds.getNorthEast();
 		        var visible = allComplexes.filter(function(c) {
-		            var inBounds = c.latitude >= sw.getLat() && c.latitude <= ne.getLat()
-		                && c.longitude >= sw.getLng() && c.longitude <= ne.getLng();
+		            var inBounds = c.latitude >= sw.getLat() && c.latitude <= ne.getLat() && c.longitude >= sw.getLng() && c.longitude <= ne.getLng();
 		            var yearOk = true;
 		            if (currentYearFrom && c.buildYear) yearOk = c.buildYear >= currentYearFrom;
 		            if (currentYearTo && c.buildYear) yearOk = yearOk && c.buildYear <= currentYearTo;
@@ -690,122 +742,72 @@ function toggleFavorite(complexId) {
 		        updateComplexList(visible);
 		    }
 		}
-
+ 
 		//=====================
 		//검색
 		//=====================
 		function onSearchInput() {
 			var kw = document.getElementById('searchInput').value;
 			var dd = document.getElementById('searchDropdown');
-			if (!kw.trim()) {
-				dd.classList.remove('active');
-				return;
-			}
-			new kakao.maps.services.Places()
-					.keywordSearch(
-							kw,
-							function(data, status) {
-								if (status !== kakao.maps.services.Status.OK) {
-									dd.classList.remove('active');
-									return;
-								}
-								dd.innerHTML = '';
-								data
-										.slice(0, 7)
-										.forEach(
-												function(p) {
-													var el = document
-															.createElement('div');
-													el.className = 'dropdown-item';
-													el.innerHTML = '<div class="item-name">'
-															+ p.place_name
-															+ '</div><div class="item-addr">'
-															+ p.address_name
-															+ '</div>';
-													el.onclick = function() {
-														map
-																.setCenter(new kakao.maps.LatLng(
-																		p.y,
-																		p.x));
-														map.setLevel(4);
-														dd.classList
-																.remove('active');
-														document
-																.getElementById('searchInput').value = p.place_name;
-													};
-													dd.appendChild(el);
-												});
-								dd.classList.add('active');
-							});
+			if (!kw.trim()) { dd.classList.remove('active'); return; }
+			new kakao.maps.services.Places().keywordSearch(kw, function(data, status) {
+				if (status !== kakao.maps.services.Status.OK) { dd.classList.remove('active'); return; }
+				dd.innerHTML = '';
+				data.slice(0, 7).forEach(function(p) {
+					var el = document.createElement('div');
+					el.className = 'dropdown-item';
+					el.innerHTML = '<div class="item-name">' + p.place_name + '</div><div class="item-addr">' + p.address_name + '</div>';
+					el.onclick = function() {
+						map.setCenter(new kakao.maps.LatLng(p.y, p.x));
+						map.setLevel(4);
+						dd.classList.remove('active');
+						document.getElementById('searchInput').value = p.place_name;
+					};
+					dd.appendChild(el);
+				});
+				dd.classList.add('active');
+			});
 		}
-
+ 
 		function searchAddress() {
 			var kw = document.getElementById('searchInput').value;
-			if (!kw.trim()) {
-				alert('검색어를 입력해주세요.');
-				return;
-			}
-			new kakao.maps.services.Places().keywordSearch(kw, function(data,
-					status) {
+			if (!kw.trim()) { alert('검색어를 입력해주세요.'); return; }
+			new kakao.maps.services.Places().keywordSearch(kw, function(data, status) {
 				if (status === kakao.maps.services.Status.OK) {
 					map.setCenter(new kakao.maps.LatLng(data[0].y, data[0].x));
 					map.setLevel(4);
-					document.getElementById('searchDropdown').classList
-							.remove('active');
-				} else {
-					alert('검색 결과가 없습니다.');
-				}
+					document.getElementById('searchDropdown').classList.remove('active');
+				} else { alert('검색 결과가 없습니다.'); }
 			});
 		}
-
-		document.getElementById('searchInput').addEventListener('keypress',
-				function(e) {
-					if (e.key === 'Enter')
-						searchAddress();
-				});
+ 
+		document.getElementById('searchInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') searchAddress(); });
 		document.addEventListener('click', function(e) {
 			if (!document.querySelector('.search-wrap').contains(e.target))
-				document.getElementById('searchDropdown').classList
-						.remove('active');
+				document.getElementById('searchDropdown').classList.remove('active');
 		});
-
+ 
 		//=====================
 		//현재 위치
 		//=====================
 		function moveToCurrentLocation() {
-    if (!navigator.geolocation) {
-        alert('위치 정보를 지원하지 않습니다.');
-        return;
-    }
-    navigator.geolocation.getCurrentPosition(function(p) {
-        var locPosition = new kakao.maps.LatLng(p.coords.latitude, p.coords.longitude);
-        map.setCenter(locPosition);
-        map.setLevel(4);
-
-        // 현재 위치 마커 표시
-        var marker = new kakao.maps.Marker({ position: locPosition });
-        marker.setMap(map);
-
-        // 인포윈도우로 "현재 위치" 표시
-        var infowindow = new kakao.maps.InfoWindow({
-            content: '<div style="padding:5px 10px;font-size:12px;font-weight:bold;color:#1A6B9A;">📍 현재 위치</div>'
-        });
-        infowindow.open(map, marker);
-
-        // 3초 후 인포윈도우 닫기
-        setTimeout(function() { infowindow.close(); }, 3000);
-    }, function() {
-        alert('위치 정보를 가져올 수 없습니다.');
-    });
-}
-
+		    if (!navigator.geolocation) { alert('위치 정보를 지원하지 않습니다.'); return; }
+		    navigator.geolocation.getCurrentPosition(function(p) {
+		        var locPosition = new kakao.maps.LatLng(p.coords.latitude, p.coords.longitude);
+		        map.setCenter(locPosition);
+		        map.setLevel(4);
+		        var marker = new kakao.maps.Marker({ position: locPosition });
+		        marker.setMap(map);
+		        var iw = new kakao.maps.InfoWindow({ content: '<div style="padding:5px 10px;font-size:12px;font-weight:bold;color:#1A6B9A;">📍 현재 위치</div>' });
+		        iw.open(map, marker);
+		        setTimeout(function() { iw.close(); }, 3000);
+		    }, function() { alert('위치 정보를 가져올 수 없습니다.'); });
+		}
+ 
 		//=====================
 		//반응형 패널
 		//=====================
-		function togglePanel() {
-			document.getElementById('sidePanel').classList
-					.contains('panel-open') ? closePanel() : openPanel();
-		}
+		function togglePanel() { document.getElementById('sidePanel').classList.contains('panel-open') ? closePanel() : openPanel(); }
 		function openPanel() {
 			document.getElementById('sidePanel').classList.add('panel-open');
 			document.getElementById('panelOverlay').classList.add('active');
@@ -816,7 +818,7 @@ function toggleFavorite(complexId) {
 			document.getElementById('panelOverlay').classList.remove('active');
 			document.getElementById('toggleIcon').textContent = '☰';
 		}
-
+ 
 		function moveToComplex(complex) {
 			isDetailView = true;
 			var pos = new kakao.maps.LatLng(complex.latitude, complex.longitude);
@@ -824,9 +826,7 @@ function toggleFavorite(complexId) {
 			map.setLevel(3);
 			showComplexDetail(complex);
 		}
-
-		
-		
+ 
 		function checkUrlParam() {
 		    var search = window.location.search;
 		    if (!search) return;
@@ -834,19 +834,12 @@ function toggleFavorite(complexId) {
 		    var pairs = search.substring(1).split('&');
 		    for (var i = 0; i < pairs.length; i++) {
 		        var pair = pairs[i].split('=');
-		        if (pair[0] === 'complexId') {
-		            complexId = pair[1];
-		            break;
-		        }
+		        if (pair[0] === 'complexId') { complexId = pair[1]; break; }
 		    }
 		    if (!complexId) return;
-
 		    var complex = null;
 		    for (var j = 0; j < allComplexes.length; j++) {
-		        if (allComplexes[j].complexId == complexId) {
-		            complex = allComplexes[j];
-		            break;
-		        }
+		        if (allComplexes[j].complexId == complexId) { complex = allComplexes[j]; break; }
 		    }
 		    if (complex) {
 		        map.setCenter(new kakao.maps.LatLng(complex.latitude, complex.longitude));
@@ -854,8 +847,7 @@ function toggleFavorite(complexId) {
 		        showComplexDetail(complex);
 		    }
 		}
-
-		// loadAllData 완료 후 체크
+ 
 		function loadAllData() {
 		    fetch('/api/complexes?swLat=34.8&swLng=128.8&neLat=35.5&neLng=129.5')
 		    .then(function(r){ return r.json(); })
@@ -865,12 +857,152 @@ function toggleFavorite(complexId) {
 		        buildMarkers(data);
 		        updateComplexList(data);
 		        buildDongButtons(data);
-		        checkUrlParam(); // ← 추가
+		        checkUrlParam();
 		    });
 		}
-		
+ 
 		loadAllData();
+ 
+		//=====================
+		//최근 거래현황 패널
+		//=====================
+		var allRecentTrades = [];
+		var currentTradeFilter = 'all';
+ 
+		function openRecentPanel() {
+		    document.getElementById('recentPanel').classList.add('open');
+		    if (allRecentTrades.length === 0) {
+		        loadRecentTrades();
+		    }
+		}
+ 
+		function closeRecentPanel() {
+		    document.getElementById('recentPanel').classList.remove('open');
+		}
+ 
+		function loadRecentTrades() {
+		    document.getElementById('recentTradeList').innerHTML = '<div class="recent-loading">불러오는 중...</div>';
+		    fetch('/api/recent-trades')
+		    .then(function(r){ return r.json(); })
+		    .then(function(data){
+		        allRecentTrades = data;
+		        renderRecentTrades(data);
+		    })
+		    .catch(function() {
+		        document.getElementById('recentTradeList').innerHTML = '<div class="recent-loading">데이터를 불러올 수 없습니다.</div>';
+		    });
+		}
+ 
+		function filterRecentTrades(type, btn) {
+		    currentTradeFilter = type;
+		    document.querySelectorAll('.recent-filter-tab').forEach(function(b){ b.classList.remove('active'); });
+		    btn.classList.add('active');
+		    var filtered = type === 'all' ? allRecentTrades : allRecentTrades.filter(function(t){ return t.type === type; });
+		    renderRecentTrades(filtered);
+		}
+ 
+		function renderRecentTrades(data) {
+		    if (!data || data.length === 0) {
+		        document.getElementById('recentTradeList').innerHTML = '<div class="recent-loading">거래 데이터가 없습니다.</div>';
+		        return;
+		    }
+ 
+		    var html = '';
+		    data.forEach(function(t) {
+		        var isSale = t.type === '매매';
+		        var isMonthly = t.type === '월세';
+		        var priceClass = isSale ? 'sale' : (isMonthly ? 'monthly' : 'rent');
+		        var badgeClass = isSale ? 'badge-sale' : (isMonthly ? 'badge-monthly' : 'badge-rent');
+ 
+		        var priceText = '';
+		        if (isSale && t.price) {
+		            priceText = t.price >= 10000 ? (t.price / 10000).toFixed(1) + '억' : t.price.toLocaleString() + '만';
+		        } else if (t.deposit) {
+		            priceText = t.deposit >= 10000 ? (t.deposit / 10000).toFixed(1) + '억' : t.deposit.toLocaleString() + '만';
+		            if (t.monthlyRent && t.monthlyRent > 0) priceText += ' / ' + t.monthlyRent + '만';
+		        }
+ 
+		        var dateStr = t.dealYear + '.' + String(t.dealMonth).padStart(2,'0') + '.' + String(t.dealDay).padStart(2,'0');
+		        var areaStr = t.area ? Math.round(t.area) + '㎡' : '-';
+		        var floorStr = t.floor ? t.floor + '층' : '-';
+ 
+		        html += '<div class="recent-trade-item" onclick="goToComplex(' + t.complexId + ')">'
+		            + '<div class="trade-item-left">'
+		            + '<div class="trade-complex-name">' + (t.complexName || '-') + '</div>'
+		            + '<div class="trade-meta">'
+		            + '<span class="trade-dong-tag">' + (t.legalDong || '') + '</span>'
+		            + '<span>' + areaStr + '</span>'
+		            + '<span>' + floorStr + '</span>'
+		            + '<span>' + dateStr + '</span>'
+		            + '</div>'
+		            + '</div>'
+		            + '<div class="trade-item-right">'
+		            + '<span class="trade-type-badge ' + badgeClass + '">' + t.type + '</span>'
+		            + '<span class="trade-price ' + priceClass + '">' + priceText + '</span>'
+		            + '</div>'
+		            + '</div>';
+		    });
+ 
+		    document.getElementById('recentTradeList').innerHTML = html;
+		}
+ 
+		function goToComplex(complexId) {
+		    var complex = null;
+		    for (var i = 0; i < allComplexes.length; i++) {
+		        if (allComplexes[i].complexId == complexId) { complex = allComplexes[i]; break; }
+		    }
+		    if (complex) {
+		        closeRecentPanel();
+		        var pos = new kakao.maps.LatLng(complex.latitude, complex.longitude);
+		        map.setCenter(pos);
+		        map.setLevel(3);
+		        showComplexDetail(complex);
+
+		        // 빨간 마커 표시
+		        var redMarker = new kakao.maps.Marker({
+		            position: pos,
+		            image: new kakao.maps.MarkerImage(
+		                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+		                new kakao.maps.Size(31, 35)
+		            ),
+		            zIndex: 10
+		        });
+		        redMarker.setMap(map);
+
+		        // 단지명 오버레이
+		        var el = document.createElement('div');
+		        el.style.cssText = 'background:#DC2626;color:#fff;padding:4px 9px;border-radius:10px;font-size:11px;font-weight:bold;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.35);cursor:pointer;';
+		        el.textContent = complex.complexName;
+		        el.onclick = function() { showComplexDetail(complex); };
+		        var overlay = new kakao.maps.CustomOverlay({
+		            position: pos, content: el, yAnchor: 2.2, zIndex: 11
+		        });
+		        overlay.setMap(map);
+
+		        // 마커 클릭해도 상세 열림
+		        kakao.maps.event.addListener(redMarker, 'click', function() {
+		            showComplexDetail(complex);
+		        });
+
+		        // 10초 후 자동 제거
+		        setTimeout(function() {
+		            redMarker.setMap(null);
+		            overlay.setMap(null);
+		        }, 10000);
+
+		        if (window.innerWidth <= 768) openPanel();
+		    }
+		}
+		
+		function searchRecentTrades() {
+		    var kw = document.getElementById('recentSearchInput').value.trim();
+		    var base = currentTradeFilter === 'all' ? allRecentTrades 
+		        : allRecentTrades.filter(function(t){ return t.type === currentTradeFilter; });
+		    var filtered = kw 
+		        ? base.filter(function(t){ return t.complexName && t.complexName.includes(kw); })
+		        : base;
+		    renderRecentTrades(filtered);
+		}
 	</script>
 </body>
-
 </html>

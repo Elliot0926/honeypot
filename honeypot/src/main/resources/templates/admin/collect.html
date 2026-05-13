@@ -139,7 +139,7 @@
 
 <!-- 5. 매매 일괄 수집 -->
 <div style="padding:20px;">
-    <h3 style="margin-bottom:12px; color:#1E293B;">📈 매매 실거래가 일괄 수집 (2023~2025)</h3>
+    <h3 style="margin-bottom:12px; color:#1E293B;">📈 매매 실거래가 일괄 수집 (2023~2026)</h3>
     <form th:action="@{/admin/collect/sale/all}" method="post">
         <div class="form-group">
             <label>시군구 코드</label>
@@ -168,7 +168,7 @@
 
 <!-- 6. 전월세 일괄 수집 -->
 <div style="padding:20px;">
-    <h3 style="margin-bottom:12px; color:#1E293B;">🏠 전월세 실거래가 일괄 수집 (2023~2025)</h3>
+    <h3 style="margin-bottom:12px; color:#1E293B;">🏠 전월세 실거래가 일괄 수집 (2023~2026)</h3>
     <form th:action="@{/admin/collect/rent/all}" method="post">
         <div class="form-group">
             <label>시군구 코드</label>
@@ -193,8 +193,34 @@
     </form>
 </div>
 
+ <hr style="border:none; border-top:1px solid #E2E8F0;">
+ 
+        <!-- 7. 매매 전체 구 일괄 수집 -->
+        <div style="padding:20px; background:#FFF8E1; border-radius:8px; margin:10px 20px;">
+            <h3 style="margin-bottom:8px; color:#E65100;">📈 매매 전체 구 일괄 수집 (부산 전체 × 2023~2026.05)</h3>
+            <p style="font-size:13px; color:#BF360C; margin-bottom:12px;">
+                ⚠️ 부산 14개 구/군 전체를 한 번에 수집합니다. 시간이 오래 걸릴 수 있습니다.
+            </p>
+            <form th:action="@{/admin/collect/sale/all-region}" method="post">
+                <button type="submit" class="btn-primary" style="background:#E65100;">전체 구 일괄 수집 실행</button>
+            </form>
+        </div>
+ 
+        <hr style="border:none; border-top:1px solid #E2E8F0;">
+ 
+        <!-- 8. 전월세 전체 구 일괄 수집 -->
+        <div style="padding:20px; background:#FFF8E1; border-radius:8px; margin:10px 20px;">
+            <h3 style="margin-bottom:8px; color:#E65100;">🏠 전월세 전체 구 일괄 수집 (부산 전체 × 2023~2026.05)</h3>
+            <p style="font-size:13px; color:#BF360C; margin-bottom:12px;">
+                ⚠️ 부산 14개 구/군 전체를 한 번에 수집합니다. 시간이 오래 걸릴 수 있습니다.
+            </p>
+            <form th:action="@{/admin/collect/rent/all-region}" method="post">
+                <button type="submit" class="btn-primary" style="background:#E65100;">전체 구 일괄 수집 실행</button>
+            </form>
+        </div>
+ 
     </div>
 </div>
-
+ 
 </body>
 </html>
