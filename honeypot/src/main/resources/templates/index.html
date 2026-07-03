@@ -194,6 +194,38 @@
 }
 .btn-recent:hover { background: #155a82; }
 
+
+.resize-handle {
+    position: absolute;
+    right: -6px;
+    top: 0;
+    bottom: 0;
+    width: 12px;
+    cursor: col-resize;
+    z-index: 50;
+    background: transparent;
+    border-right: 3px solid transparent;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.resize-handle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 60px;
+    background-image: radial-gradient(circle, #64748B 2.5px, transparent 2.5px);
+    background-size: 6px 12px;
+    background-repeat: repeat-y;
+    pointer-events: none;
+}
+.resize-handle:hover::after,
+.resize-handle.dragging::after {
+    background-image: radial-gradient(circle, rgba(37,99,235,0.9) 2.5px, transparent 2.5px);
+}
+
 </style>
 </head>
 <body>
@@ -223,6 +255,7 @@
  
 	<div class="main-layout">
 		<div class="side-panel" id="sidePanel">
+   			 <div class="resize-handle" id="resizeHandle"></div>
 			<div class="panel-header">
 				<div class="search-wrap">
 					<div class="search-box">
@@ -309,46 +342,59 @@
 			minLevel : 3,
 			minClusterSize : 2,
 			calculator : [ 10, 30, 50 ],
-			styles : [ {
-				width : '48px',
-				height : '48px',
-				background : 'linear-gradient(135deg, #1A6B9A, #0D9488)',
-				borderRadius : '50%',
-				color : '#fff',
-				textAlign : 'center',
-				fontWeight : 'bold',
-				lineHeight : '48px',
-				fontSize : '14px',
-				border : '2px solid rgba(255,255,255,0.8)',
-				boxShadow : '0 3px 10px rgba(0,0,0,0.3)',
-				cursor : 'pointer'
-			}, {
-				width : '56px',
-				height : '56px',
-				background : 'linear-gradient(135deg, #FF6B35, #f59e0b)',
-				borderRadius : '50%',
-				color : '#fff',
-				textAlign : 'center',
-				fontWeight : 'bold',
-				lineHeight : '56px',
-				fontSize : '15px',
-				border : '2px solid rgba(255,255,255,0.8)',
-				boxShadow : '0 3px 10px rgba(0,0,0,0.3)',
-				cursor : 'pointer'
-			}, {
-				width : '64px',
-				height : '64px',
-				background : 'linear-gradient(135deg, #DC2626, #9333ea)',
-				borderRadius : '50%',
-				color : '#fff',
-				textAlign : 'center',
-				fontWeight : 'bold',
-				lineHeight : '64px',
-				fontSize : '16px',
-				border : '2px solid rgba(255,255,255,0.8)',
-				boxShadow : '0 3px 10px rgba(0,0,0,0.3)',
-				cursor : 'pointer'
-			} ]
+			styles: [
+			    {
+			        // 10개 미만
+			        width: '40px',
+			        height: '40px',
+			        background: 'rgba(37, 99, 235, 0.9)',
+			        backdropFilter: 'blur(4px)',
+			        borderRadius: '50%',
+			        color: '#fff',
+			        textAlign: 'center',
+			        fontWeight: '700',
+			        lineHeight: '40px',
+			        fontSize: '13px',
+			        border: '2px solid rgba(255,255,255,0.6)',
+			        boxShadow: '0 2px 12px rgba(37,99,235,0.45), 0 0 0 6px rgba(37,99,235,0.12)',
+			        cursor: 'pointer',
+			        fontFamily: 'Noto Sans KR, sans-serif'
+			    },
+			    {
+			        // 30개 미만
+			        width: '50px',
+			        height: '50px',
+			        background: 'rgba(8, 145, 178, 0.9)',
+			        backdropFilter: 'blur(4px)',
+			        borderRadius: '50%',
+			        color: '#fff',
+			        textAlign: 'center',
+			        fontWeight: '700',
+			        lineHeight: '50px',
+			        fontSize: '14px',
+			        border: '2px solid rgba(255,255,255,0.6)',
+			        boxShadow: '0 2px 14px rgba(8,145,178,0.45), 0 0 0 7px rgba(8,145,178,0.12)',
+			        cursor: 'pointer',
+			        fontFamily: 'Noto Sans KR, sans-serif'
+			    },
+			    {
+			        // 50개 이상
+			        width: '60px',
+			        height: '60px',
+			        background: 'rgba(217, 119, 6, 0.9)',
+			        backdropFilter: 'blur(4px)',
+			        borderRadius: '50%',
+			        color: '#fff',
+			        textAlign: 'center',
+			        fontWeight: '700',
+			        lineHeight: '60px',
+			        fontSize: '15px',
+			        border: '2px solid rgba(255,255,255,0.6)',
+			        boxShadow: '0 2px 16px rgba(217,119,6,0.45), 0 0 0 8px rgba(217,119,6,0.12)',
+			        cursor: 'pointer',
+			        fontFamily: 'Noto Sans KR, sans-serif'
+			    }
+			]
 		});
  
 		kakao.maps.event.addListener(clusterer, 'clusterclick', function(cluster) {
@@ -511,7 +557,7 @@
 		function updateOverlayVisibility() {
 		    var level = map.getLevel();
 		    markerOverlays.forEach(function(o){
-		        o.setMap(level <= 3 ? map : null);
+		        o.setMap(level <= 4 ? map : null);
 		    });
 		}
 
@@ -1071,6 +1117,40 @@
 		        : base;
 		    renderRecentTrades(filtered);
 		}
+		
+		// 패널 리사이즈
+		(function() {
+		    var handle = document.getElementById('resizeHandle');
+		    var panel = document.getElementById('sidePanel');
+		    var isDragging = false;
+		    var startX, startW;
+
+		    handle.addEventListener('mousedown', function(e) {
+		        isDragging = true;
+		        startX = e.clientX;
+		        startW = panel.offsetWidth;
+		        handle.classList.add('dragging');
+		        document.body.style.cursor = 'col-resize';
+		        document.body.style.userSelect = 'none';
+		        e.preventDefault();
+		    });
+
+		    document.addEventListener('mousemove', function(e) {
+		        if (!isDragging) return;
+		        var newW = startW + (e.clientX - startX);
+		        newW = Math.max(220, Math.min(500, newW)); // 최소 220 최대 500
+		        panel.style.width = newW + 'px';
+		        panel.style.minWidth = newW + 'px';
+		    });
+
+		    document.addEventListener('mouseup', function() {
+		        if (!isDragging) return;
+		        isDragging = false;
+		        handle.classList.remove('dragging');
+		        document.body.style.cursor = '';
+		        document.body.style.userSelect = '';
+		    });
+		})();
 	</script>
 </body>
 </html>
